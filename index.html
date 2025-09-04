@@ -272,7 +272,7 @@
                 const message = document.getElementById('message').value;
 
                 const { data, error } = await supabaseClient
-                    .from('inversores')
+                    .from('investors')
                     .insert([
                         // ⚠️ ¡ÚLTIMA REVISIÓN! 
                         // Asegúrate de que los nombres de aquí (name, email, phone, message)
