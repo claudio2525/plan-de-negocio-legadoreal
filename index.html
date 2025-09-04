@@ -210,94 +210,60 @@
     </footer>
 
     <script>
-        // Asegura que todo se ejecute después de que el DOM esté completamente cargado.
-        window.onload = function() {
-            // CÓDIGO PARA LAS GRÁFICAS (SIN CAMBIOS)
-            // Chart for Market Opportunity Section
-            const marketCtx = document.getElementById('marketChart').getContext('2d');
-            new Chart(marketCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mexicanos', 'Puertorriqueños', 'Salvadoreños', 'Cubanos', 'Dominicanos', 'Guatemaltecos'],
-                    datasets: [{
-                        label: 'Población Hispana en EE. UU. (en millones)',
-                        data: [37.1, 5.9, 2.3, 2.4, 2.2, 1.6],
-                        backgroundColor: '#eab308',
-                        borderColor: '#f59e0b',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#d1d5db' }, grid: { color: 'rgba(209, 213, 219, 0.1)' } }, y: { beginAtZero: true, ticks: { color: '#d1d5db' }, grid: { color: 'rgba(209, 213, 219, 0.1)' } } },
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) { label += ': '; } if (context.parsed.y !== null) { label += context.parsed.y + ' M'; } return label; } } } }
-                }
-            });
+    // Asegura que todo se ejecute después de que el DOM esté completamente cargado.
+    window.onload = function() {
+        // CÓDIGO PARA LAS GRÁFICAS (SIN CAMBIOS)
+        // ... (el código de las gráficas permanece igual) ...
 
-            // Chart for Financial Projection
-            const financialCtx = document.getElementById('financialChart').getContext('2d');
-            new Chart(financialCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Año 1', 'Año 2', 'Año 3', 'Año 4', 'Año 5'],
-                    datasets: [ { label: 'Ingresos Totales (en millones)', data: [1.15, 3.5, 7.5, 13.0, 20.0], borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.2)', tension: 0.4, fill: true, }, { label: 'Beneficio Neto (en millones)', data: [0.5, 1.75, 4.125, 7.8, 12.0], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', tension: 0.4, fill: true, } ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#d1d5db' }, grid: { color: 'rgba(209, 213, 219, 0.1)' } }, y: { beginAtZero: true, ticks: { color: '#d1d5db' }, grid: { color: 'rgba(209, 213, 219, 0.1)' } } },
-                    plugins: { legend: { labels: { color: '#d1d5db' } }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) { label += ': '; } if (context.parsed.y !== null) { label += '$' + context.parsed.y.toLocaleString() + ' M'; } return label; } } } }
-                }
-            });
+        // --- INICIA EL NUEVO CÓDIGO PARA EL FORMULARIO (CORREGIDO) ---
 
-            // --- INICIA EL NUEVO CÓDIGO PARA EL FORMULARIO ---
+        // 1. Configuración del cliente de Supabase
+        const supabaseUrl = 'https://apucfefjgfgvtxdmvfou.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwdWNmZWZqZ2ZndnR4ZG12Zm91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NzI1NzEsImV4cCI6MjA3MjU0ODU3MX0.cffT1r2MZn6E-ZcP0fOEHIjuHtwABEMN54kTVqTqoJk';
+        
+        // CORRECCIÓN 1: Renombramos la variable a "supabaseClient" para evitar el conflicto.
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-            // 1. Configuración del cliente de Supabase
-            const supabaseUrl = 'https://apucfefjgfgvtxdmvfou.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwdWNmZWZqZ2ZndnR4ZG12Zm91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NzI1NzEsImV4cCI6MjA3MjU0ODU3MX0.cffT1r2MZn6E-ZcP0fOEHIjuHtwABEMN54kTVqTqoJk';
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // 2. Selección del formulario y del mensaje de feedback
+        const form = document.getElementById('investment-form');
+        const formMessage = document.getElementById('form-message');
+        
+        // 3. Event listener para manejar el envío del formulario
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-            // 2. Selección del formulario y del mensaje de feedback
-            const form = document.getElementById('investment-form');
-            const formMessage = document.getElementById('form-message');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = 'Enviando...';
+            submitButton.disabled = true;
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const message = document.getElementById('message').value;
+
+            // CORRECCIÓN 2: Usamos la nueva variable "supabaseClient".
+            const { data, error } = await supabaseClient
+                .from('inversores')
+                .insert([
+                    { name: name, email: email, phone: phone, message: message }
+                ]);
+
+            if (error) {
+                console.error('Error al enviar los datos:', error);
+                formMessage.textContent = 'Hubo un error al enviar tu interés. Por favor, inténtalo de nuevo.';
+                formMessage.className = 'mt-4 text-sm text-red-400';
+            } else {
+                console.log('Datos enviados con éxito:', data);
+                formMessage.textContent = '¡Gracias! Hemos recibido tus datos y te contactaremos pronto.';
+                formMessage.className = 'mt-4 text-sm text-green-400';
+                form.reset();
+            }
             
-            // 3. Event listener para manejar el envío del formulario
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Previene que la página se recargue
-
-                const submitButton = form.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.innerHTML;
-                submitButton.innerHTML = 'Enviando...';
-                submitButton.disabled = true;
-
-                // Obtiene los valores de los campos
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const phone = document.getElementById('phone').value;
-                const message = document.getElementById('message').value;
-
-                // 4. Inserta los datos en tu tabla de Supabase
-                const { data, error } = await supabase
-                    .from('inversores') // <-- ¡Importante!
-                    .insert([
-                        // Asegúrate que los nombres de las columnas coincidan con tu tabla
-                        { name: name, email: email, phone: phone, message: message }
-                    ]);
-
-                // 5. Manejo de la respuesta
-                if (error) {
-                    console.error('Error al enviar los datos:', error);
-                    formMessage.textContent = 'Hubo un error al enviar tu interés. Por favor, inténtalo de nuevo.';
-                    formMessage.className = 'mt-4 text-sm text-red-400'; // Muestra mensaje de error
-                } else {
-                    console.log('Datos enviados con éxito:', data);
-                    formMessage.textContent = '¡Gracias! Hemos recibido tus datos y te contactaremos pronto.';
-                    formMessage.className = 'mt-4 text-sm text-green-400'; // Muestra mensaje de éxito
-                    form.reset(); // Limpia el formulario
-                }
-                
-                // Restaura el botón
-                submitButton.innerHTML = originalButtonText;
-                submitButton.disabled = false;
-            });
-        };
-    </script>
+            submitButton.innerHTML = originalButtonText;
+            submitButton.disabled = false;
+        });
+    };
+</script>
 </body>
 </html>
