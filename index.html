@@ -1,463 +1,237 @@
-<!-- Chosen Palette: Legado Real Soberano (Azul Noche, Oro Viejo, Hueso) -->
-<!-- Application Structure Plan: Se ha diseñado una SPA con una barra de navegación lateral fija y un área de contenido principal. Esta estructura de "dashboard" permite al usuario saltar entre los pilares clave del ODA (Visión, Arquitectura, Organización, Estrategia y Futuro) sin perder el contexto. La interacción se centra en explorar datos complejos (financieros, tecnológicos, organizacionales) a través de visualizaciones y filtros para facilitar la comprensión rápida del sistema completo. La estructura fue elegida para transformar un plan estratégico denso en una herramienta de análisis explorable y unificada. -->
-<!-- Visualization & Content Choices: 1. Proyección Financiera -> Objetivo: Comparar crecimiento -> Viz: Gráfico de Barras Agrupadas (Chart.js) -> Interacción: Tooltips con cifras exactas -> Justificación: Mucho más efectivo que una tabla para visualizar el crecimiento exponencial. 2. Stack Tecnológico -> Objetivo: Organizar y explorar -> Viz: Cuadrícula de tarjetas con filtros (HTML/Tailwind/JS) -> Interacción: Botones para filtrar por categoría -> Justificación: Permite desglosar un stack complejo en partes manejables. 3. Staff Autónomo -> Objetivo: Organizar jerarquía -> Viz: Tarjetas agrupadas por departamento (HTML/JS) -> Justificación: Clarifica la estructura organizacional. -->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | ODA LegadoReal.com</title>
+    <title>Legado Real - Plan de Negocio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&family=Avenir+Next:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Avenir Next', sans-serif;
-            background-color: #0a192f; /* Azul Noche */
-            color: #E8E6D9; /* Blanco Hueso */
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937;
+            color: #e5e7eb;
+            line-height: 1.6;
         }
-        h1, h2, h3, h4, h5 {
-            font-family: 'Bodoni Moda', serif;
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://placehold.co/1920x1080/1f2937/e5e7eb?text=Legado+Real') center center/cover no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #fff;
+            text-align: center;
         }
-        .brand-accent-gold { color: #B8860B; } /* Oro Viejo */
-        .brand-secondary { color: #4682B4; } /* Acero Azul */
-        
-        .nav-link {
-            transition: all 0.2s ease-in-out;
-            border-left: 4px solid transparent;
+        .section {
+            padding: 8rem 2rem;
         }
-        .nav-link:hover, .nav-link.active {
-            background-color: rgba(184, 134, 11, 0.05);
-            border-left-color: #B8860B; /* Oro Viejo */
-            color: #B8860B;
+        .card {
+            background-color: #374151;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
         }
         .chart-container {
             position: relative;
+            height: 400px;
             width: 100%;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 45vh;
-            max-height: 550px;
         }
-        .card {
-            background-color: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(184, 134, 11, 0.1), 0 4px 6px -2px rgba(184, 134, 11, 0.05);
-        }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a192f; }
-        ::-webkit-scrollbar-thumb { background: #4682B4; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5a9bd8; }
     </style>
 </head>
-<body class="antialiased">
+<body class="bg-gray-800 text-gray-200">
 
-<div class="flex min-h-screen">
-    <!-- Sidebar de Navegación -->
-    <aside class="w-64 bg-[#0a192f] text-white p-6 fixed h-full hidden lg:block border-r border-gray-800">
-        <h1 class="text-2xl font-bold mb-8 text-center brand-accent-gold">ODA LegadoReal</h1>
-        <nav id="desktop-nav" class="flex flex-col space-y-2">
-            <a href="#vision" class="nav-link py-2 px-4 rounded-r-md text-gray-300">Visión y Constitución</a>
-            <a href="#organizacion" class="nav-link py-2 px-4 rounded-r-md text-gray-300">Organización Autónoma</a>
-            <a href="#arquitectura" class="nav-link py-2 px-4 rounded-r-md text-gray-300">Arquitectura y Stack</a>
-            <a href="#operaciones" class="nav-link py-2 px-4 rounded-r-md text-gray-300">Manual de Operaciones</a>
-            <a href="#futuro" class="nav-link py-2 px-4 rounded-r-md text-gray-300">Futuro y Crecimiento</a>
-        </nav>
-    </aside>
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="space-y-6 max-w-4xl px-4">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight animate-fade-in-down">
+                <span class="text-yellow-400">Legado Real</span>
+            </h1>
+            <p class="text-xl md:text-2xl lg:text-3xl font-light leading-relaxed animate-fade-in-up">
+                La Fábrica de Marcas del futuro. Un ecosistema autónomo diseñado para escalar el propósito en la era digital.
+            </p>
+        </div>
+    </header>
 
-    <!-- Contenido Principal -->
-    <main class="flex-1 lg:ml-64 p-6 md:p-10">
-        <header class="lg:hidden text-center mb-8">
-            <h1 class="text-3xl font-bold brand-accent-gold">ODA LegadoReal.com</h1>
-            <p class="text-lg text-gray-300">Plano Maestro Interactivo</p>
-        </header>
-
-        <!-- Sección 1: Visión y Constitución -->
-        <section id="vision" class="mb-20">
-            <h2 class="text-4xl font-bold mb-6 border-b-2 border-gray-700 pb-2 text-white">Visión y Constitución</h2>
-            <p class="mb-10 text-lg text-gray-400">Los fundamentos del ODA: su propósito, sus leyes y el modelo que define su existencia. Esta es la base ideológica sobre la que se construye cada decisión y cada acción del organismo.</p>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="card p-6 rounded-lg md:col-span-2">
-                    <h3 class="text-2xl font-bold mb-3 brand-secondary">Arquetipo Principal: El Héroe</h3>
-                    <p class="text-gray-300">Nos centramos en el Héroe: la persona que, sin importar su origen o educación, forja su propio destino a través de la resiliencia y un propósito inquebrantable. La inspiración es Lionel Messi, quien no heredó un trono, sino que construyó su legado desde cero. El mensaje es claro: tu punto de partida no dicta tu futuro; tu visión y tu trabajo sí.</p>
+    <!-- About Section -->
+    <section id="vision" class="section bg-gray-900">
+        <div class="container mx-auto max-w-7xl">
+            <div class="text-center space-y-4 mb-16">
+                <h2 class="text-4xl font-bold tracking-tight text-yellow-400">Nuestra Visión</h2>
+                <p class="text-xl text-gray-400">Más allá de un negocio, un movimiento.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <img src="https://placehold.co/600x400/374151/e5e7eb?text=Visión+y+Misión" alt="Representación visual de la visión y misión de Legado Real." class="rounded-lg shadow-xl">
                 </div>
-                <div class="card p-6 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-3 brand-secondary">Visión</h3>
-                    <p class="text-gray-300">Ser la chispa que enciende una nueva era de emprendedores-héroes, creando un universo donde una multitud de legados, nacidos del propósito y forjados con honor, demuestren que la verdadera realeza es la libertad de construir el propio destino.</p>
-                </div>
-                <div class="card p-6 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-3 brand-secondary">Misión</h3>
-                    <p class="text-gray-300">Construir un Organismo Digital Autónomo (ODA), un sistema de vanguardia diseñado para crear, lanzar y escalar marcas con propósito, siendo LegadoReal.com nuestra primera marca insignia y el prototipo de nuestra tecnología "Fábrica de Marcas".</p>
-                </div>
-                 <div class="card p-6 rounded-lg md:col-span-2">
-                    <h3 class="text-2xl font-bold mb-3 brand-secondary">Modelo de Negocio: 3 Motores de Ingresos</h3>
-                    <div class="flex flex-col md:flex-row justify-around text-center gap-4">
-                        <div>
-                            <h4 class="font-bold text-lg text-white">Productos Digitales</h4>
-                            <p class="text-gray-400">Mayor margen</p>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg text-white">Impresión Bajo Demanda</h4>
-                            <p class="text-gray-400">Motor de volumen</p>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg text-white">Marca Blanca</h4>
-                            <p class="text-gray-400">Línea premium</p>
-                        </div>
+                <div class="space-y-6">
+                    <div class="card bg-gray-700">
+                        <h3 class="text-2xl font-semibold mb-3">Misión</h3>
+                        <p class="text-gray-300">Construir un Organismo Digital Autónomo (ODA), un sistema de vanguardia diseñado para crear, lanzar y escalar marcas con propósito. LegadoReal.com es nuestro prototipo y primera marca insignia.</p>
+                    </div>
+                    <div class="card bg-gray-700">
+                        <h3 class="text-2xl font-semibold mb-3">Visión</h3>
+                        <p class="text-gray-300">Ser la chispa que enciende una nueva era de emprendedores-héroes, creando un universo donde una multitud de legados, nacidos del propósito y forjados con honor, demuestren que la verdadera realeza es la libertad de construir el propio destino.</p>
                     </div>
                 </div>
             </div>
-             <div class="card p-6 rounded-lg mt-8">
-                <h3 class="text-2xl font-bold mb-4 brand-secondary">Las 10 Leyes Fundamentales (La Constitución)</h3>
-                <ul class="grid md:grid-cols-2 gap-x-8 gap-y-4 list-decimal list-inside text-gray-300">
-                    <li>Soberanía Tecnológica</li>
-                    <li>Autonomía con Veto Humano</li>
-                    <li>Auto-Mejora Continua</li>
-                    <li>Lealtad al Cliente</li>
-                    <li>Neutralidad Universal</li>
-                    <li>Imparcialidad Comercial</li>
-                    <li>Fusión SEO-Copywriting</li>
-                    <li>Innovación Controlada</li>
-                    <li>Ley de Identidad de Marca</li>
-                    <li>Ley de Comunicación Bicultural</li>
-                </ul>
+        </div>
+    </section>
+
+    <!-- Business Model Section -->
+    <section id="modelo-de-negocio" class="section bg-gray-800">
+        <div class="container mx-auto max-w-7xl">
+            <div class="text-center space-y-4 mb-16">
+                <h2 class="text-4xl font-bold tracking-tight text-yellow-400">Nuestro Modelo de Negocio</h2>
+                <p class="text-xl text-gray-400">Tres motores de ingresos, un solo objetivo: el crecimiento sostenible.</p>
             </div>
-        </section>
-
-        <!-- Sección 3: Organización Autónoma -->
-        <section id="organizacion" class="mb-20">
-            <h2 class="text-4xl font-bold mb-6 border-b-2 border-gray-700 pb-2 text-white">Organización Autónoma</h2>
-             <p class="mb-10 text-lg text-gray-400">El ODA es operado por un "Staff Autónomo", un equipo de agentes de IA hiper-especializados. Esta sección detalla la estructura organizacional completa, dividida por departamentos funcionales.</p>
-             <div id="agents-grid" class="space-y-10">
-                <!-- Las tarjetas de los agentes se insertarán aquí con JS -->
-             </div>
-        </section>
-
-        <!-- Sección 2: Arquitectura y Stack -->
-        <section id="arquitectura" class="mb-20">
-            <h2 class="text-4xl font-bold mb-6 border-b-2 border-gray-700 pb-2 text-white">Arquitectura y Stack Tecnológico</h2>
-            <p class="mb-10 text-lg text-gray-400">El corazón técnico del ODA. Aquí se detalla el stack 100% soberano, las capacidades de automatización (MCPs) y los "cerebros" de IA que impulsan la operación.</p>
-
-            <div class="card p-6 rounded-lg mb-8">
-                <h3 class="text-2xl font-bold mb-4 brand-secondary">Stack Tecnológico Soberano</h3>
-                <div id="tech-stack-filters" class="flex flex-wrap gap-2 mb-6">
-                     <button class="tech-filter active bg-emerald-700 text-white py-1 px-3 rounded-full text-sm" data-filter="all">Todo</button>
-                    <button class="tech-filter bg-gray-700 text-gray-200 py-1 px-3 rounded-full text-sm" data-filter="Infraestructura">Infraestructura</button>
-                    <button class="tech-filter bg-gray-700 text-gray-200 py-1 px-3 rounded-full text-sm" data-filter="Datos y Conocimiento">Datos y Conocimiento</button>
-                    <button class="tech-filter bg-gray-700 text-gray-200 py-1 px-3 rounded-full text-sm" data-filter="Automatización y Operaciones">Automatización y Operaciones</button>
-                    <button class="tech-filter bg-gray-700 text-gray-200 py-1 px-3 rounded-full text-sm" data-filter="Fábrica de Frontends">Fábrica de Frontends</button>
-                    <button class="tech-filter bg-gray-700 text-gray-200 py-1 px-3 rounded-full text-sm" data-filter="Autonomía y Modelos IA">Autonomía y Modelos IA</button>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card">
+                    <img src="https://placehold.co/150x150/eab308/1f2937?text=Digital" alt="Icono de productos digitales" class="mx-auto mb-6 rounded-full">
+                    <h3 class="text-2xl font-semibold mb-3 text-yellow-400">1. Productos Digitales</h3>
+                    <p class="text-gray-300">La línea de mayor margen. Incluye planificadores, guías, cursos, y plantillas que potencian el desarrollo personal y la productividad.</p>
                 </div>
-                <div id="tech-stack-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="card">
+                    <img src="https://placehold.co/150x150/eab308/1f2937?text=POD" alt="Icono de impresión bajo demanda" class="mx-auto mb-6 rounded-full">
+                    <h3 class="text-2xl font-semibold mb-3 text-yellow-400">2. Impresión Bajo Demanda (POD)</h3>
+                    <p class="text-gray-300">El motor de volumen. Artículos físicos como camisetas, tazas y cuadernos que capturan la esencia de nuestra marca, sin riesgo de inventario.</p>
+                </div>
+                <div class="card">
+                    <img src="https://placehold.co/150x150/eab308/1f2937?text=Marca+Blanca" alt="Icono de marca blanca" class="mx-auto mb-6 rounded-full">
+                    <h3 class="text-2xl font-semibold mb-3 text-yellow-400">3. Marca Blanca</h3>
+                    <p class="text-gray-300">La línea prémium. Ofrecemos suplementos, cosméticos y otros productos de alta calidad, permitiendo una expansión en nichos de alto valor.</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="grid lg:grid-cols-2 gap-8 mt-8">
-                <div class="card p-6 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-4 brand-secondary">Catálogo de Capacidades (MCPs en n8n)</h3>
-                    <p class="text-sm text-gray-400 mb-4">Total: 22 flujos de trabajo automatizados.</p>
-                    <div class="grid grid-cols-2 gap-x-4 text-sm">
-                        <ul class="space-y-2 text-gray-300">
-                            <li class="font-bold text-emerald-400 col-span-2">Gobierno y Orquestación (3)</li>
-                            <li>`process-founder-command:v1`</li>
-                            <li>`strategic-approval-flow:v1`</li>
-                            <li>`project-orchestrator:v1`</li>
-                            <li class="font-bold text-emerald-400 col-span-2 mt-3">Innovación y Tecnología (7)</li>
-                            <li>`setup-brand-theme:v1`</li>
-                            <li>`asset-optimizer-soberano:v1`</li>
-                            <li>`gitea-motia-qa-pipeline:v2`</li>
-                            <li>`run-performance-audit:v1`</li>
-                            <li>`fleet-updater:v1`</li>
-                            <li>`system-backup:v1`</li>
-                            <li>`knowledge-base-indexer:v1`</li>
-                        </ul>
-                        <ul class="space-y-2 text-gray-300">
-                             <li class="font-bold text-emerald-400 col-span-2">Inteligencia de Mercado (3)</li>
-                            <li>`market-scraper:v1`</li>
-                            <li>`trend-report-compiler:v1`</li>
-                            <li>`customer-feedback-analyzer:v1`</li>
-                             <li class="font-bold text-emerald-400 col-span-2 mt-3">Producción y Operaciones (7)</li>
-                            <li>`content-approval-flow:v1`</li>
-                            <li>`audiovisual-render-pipeline:v1`</li>
-                             <li>`multichannel-product-sync:v1`</li>
-                            <li>`supplier-payment-processor:v1`</li>
-                            <li>`transaction-logger:v1`</li>
-                            <li>`cx-ticket-router:v1`</li>
-                            <li>`process-archiver:v1`</li>
-                             <li class="font-bold text-emerald-400 col-span-2 mt-3">Marketing (2)</li>
-                            <li>`lead-nurturing-sequence:v1`</li>
-                            <li>`ambassador-program-manager:v1`</li>
+    <!-- Market Opportunity Section -->
+    <section id="mercado" class="section bg-gray-900">
+        <div class="container mx-auto max-w-7xl">
+            <div class="text-center space-y-4 mb-16">
+                <h2 class="text-4xl font-bold tracking-tight text-yellow-400">El Mercado de Oportunidad</h2>
+                <p class="text-xl text-gray-400">Un nicho en crecimiento exponencial, esperando un líder.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-3xl font-bold mb-4">El Poder del Consumidor Hispano</h3>
+                    <p class="text-gray-300 mb-6">La población hispana en EE. UU. ha crecido a **65.2 millones**, representando el 71% del crecimiento total del país entre 2022 y 2023. No es solo un grupo demográfico, es un motor económico que busca marcas que entiendan y celebren su identidad bicultural y su resiliencia.</p>
+                    <div class="card bg-gray-700 p-6">
+                        <h4 class="text-xl font-semibold mb-2">Nuestro Psicográfico Clave: El "High-Achiever" Latino</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li>**Resiliencia:** Buscan productos que validen su fortaleza interior.</li>
+                            <li>**Excelencia:** Constantemente en búsqueda de superación personal.</li>
+                            <li>**Orgullo Bicultural:** Valoran la fusión de lo contemporáneo con sus raíces.</li>
+                            <li>**Legado:** Piensan a largo plazo, en el futuro de sus familias.</li>
                         </ul>
                     </div>
                 </div>
-                <div class="card p-6 rounded-lg">
-                    <h3 class="text-2xl font-bold mb-4 brand-secondary">Catálogo de "Cerebros" (Flowise)</h3>
-                    <p class="text-sm text-gray-400 mb-4">Total: 7 herramientas de IA especializadas.</p>
-                    <ul class="space-y-3 text-gray-300">
-                        <li><strong class="text-white">command-interpreter:v1:</strong> (Crítico) El "traductor universal" que procesa las órdenes del Fundador.</li>
-                        <li><strong class="text-white">design-system-consultant:v1:</strong> Asiste al Diseñador Visual, recomienda componentes y genera código base.</li>
-                        <li><strong class="text-white">performance-analyst:v1:</strong> Interpreta informes de Lighthouse, detecta regresiones y crea tickets de incidencia.</li>
-                        <li><strong class="text-white">market-analyst-brain:v1:</strong> Sintetiza datos de mercado para generar informes de oportunidades.</li>
-                        <li><strong class="text-white">customer-sentiment-brain:v1:</strong> Analiza feedback de clientes y extrae temas clave.</li>
-                        <li><strong class="text-white">pi-verifier-brain:v1:</strong> Asiste al Agente de Verificación de PI en el análisis de diseños.</li>
-                        <li><strong class="text-white">neutrality-guardian-brain:v1:</strong> Asiste al Guardián de la Neutralidad en la auditoría de contenido.</li>
-                    </ul>
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Sección 6: Manuales de Operaciones Estratégicas -->
-        <section id="operaciones" class="mb-20">
-            <h2 class="text-4xl font-bold mb-6 border-b-2 border-gray-700 pb-2 text-white">Manual de Operaciones Estratégicas</h2>
-             <p class="mb-10 text-lg text-gray-400">El "modus operandi" del ODA. No es una lista de herramientas, sino el conjunto de estrategias y procesos de decisión que definen cómo el sistema opera, aprende y evoluciona.</p>
-             <div class="space-y-8">
-                 <div class="card p-6 rounded-lg">
-                     <h3 class="text-xl font-bold mb-3 brand-secondary">La Cadena de Mando: De la Intención a la Acción</h3>
-                     <p class="text-gray-300">El MCP `process-founder-command:v1` enruta el audio del Fundador (Telegram) al cerebro `command-interpreter:v1`, que lo transcribe, analiza (Intención, Entidades, Sentimiento) y lo convierte en una orden JSON estructurada para el Agente CEO.</p>
-                 </div>
-                 <div class="card p-6 rounded-lg">
-                     <h3 class="text-xl font-bold mb-3 brand-secondary">La Gestión de Proyectos: El Orquestador Proactivo</h3>
-                     <p class="text-gray-300">El CEO delega proyectos (lanzar marca, producto, campaña) al MCP `project-orchestrator:v1`. Este Orquestador carga el "Blueprint" de proyecto correspondiente desde la BCOU y ejecuta las tareas en paralelo siempre que sea lógicamente posible.</p>
-                 </div>
-                 <div class="card p-6 rounded-lg">
-                     <h3 class="text-xl font-bold mb-3 brand-secondary">La Memoria del ODA: El Cerebro Unificado (BCOU)</h3>
-                     <p class="text-gray-300">Todas las operaciones y conocimientos se registran en una única tabla `records` en Supabase. El MCP `knowledge-base-indexer:v1` convierte el conocimiento de AppFlowy en vectores semánticos (`pgvector`), permitiendo a los agentes realizar consultas híbridas para un aprendizaje profundo.</p>
-                 </div>
-                  <div class="card p-6 rounded-lg">
-                     <h3 class="text-xl font-bold mb-3 brand-secondary">Creación de Capacidades: "Aprendizaje por Imitación y Síntesis"</h3>
-                     <p class="text-gray-300">El Agente IDC investiga las 3-5 mejores soluciones o arquitecturas existentes para un problema, analiza sus pros y contras, y diseña una nueva solución superior que sintetiza las mejores características de las investigadas.</p>
-                 </div>
-                 <div class="card p-6 rounded-lg">
-                     <h3 class="text-xl font-bold mb-3 brand-secondary">Marketing: Los 4 Pilares Fundamentales</h3>
-                     <ol class="list-decimal list-inside space-y-2 text-gray-300">
-                         <li>**Fusión SEO-Copywriting:** Se compila un dossier de palabras clave SEO, que luego se integran de forma persuasiva en el contenido.</li>
-                         <li>**Contenido Evergreen y Reciclaje:** Se crea un activo "pilar" (blog, video largo) que luego se "atomiza" en múltiples piezas satélite (Reels, posts).</li>
-                         <li>**Storytelling:** El contenido satélite se reinterpreta a través de narrativas visuales y escritas para conectar emocionalmente con la audiencia.</li>
-                         <li>**Email Marketing de Relación:** Se capturan leads y se utilizan secuencias de email que continúan el storytelling para construir confianza antes de la venta.</li>
-                     </ol>
-                 </div>
-             </div>
-        </section>
-
-        <!-- Sección 4: Hoja de Ruta y Finanzas -->
-        <section id="futuro" class="mb-16">
-            <h2 class="text-4xl font-bold mb-6 border-b-2 border-gray-700 pb-2 text-white">Futuro y Crecimiento</h2>
-            <p class="mb-10 text-lg text-gray-400">La visión a largo plazo del ODA. Aquí se detalla la hoja de ruta para su construcción y la proyección financiera que demuestra el poder del modelo de "Fábrica de Marcas".</p>
-            <div class="card p-6 rounded-lg mb-8">
-                 <h3 class="text-2xl font-bold mb-4 brand-secondary">Hoja de Ruta de Ejecución</h3>
-                 <ol class="list-decimal list-inside space-y-3 text-gray-300">
-                     <li>**Fase 1: Construcción de la "Oficina Central"** (Intervención Manual del Fundador para desplegar el Stack Base y crear los agentes primarios).</li>
-                     <li>**Fase 2: Construcción Autónoma** (Dirigida por el CEO para construir MCPs, Cerebros y completar la instalación de software).</li>
-                     <li>**Fase 3: Construcción de la "Fábrica de IA"** (El Ingeniero de Infraestructura provisiona la VM de Producción con GPU).</li>
-                     <li>**Fase 4: Diagnóstico y Puesta en Marcha** (El CEO orquesta una prueba completa del sistema).</li>
-                 </ol>
+    <!-- Financial Projection Section -->
+    <section id="proyeccion" class="section bg-gray-800">
+        <div class="container mx-auto max-w-7xl">
+            <div class="text-center space-y-4 mb-16">
+                <h2 class="text-4xl font-bold tracking-tight text-yellow-400">Proyección Financiera</h2>
+                <p class="text-xl text-gray-400">Un crecimiento sólido y un retorno de inversión claro.</p>
             </div>
-            <div class="card p-6 rounded-lg">
-                 <h3 class="text-2xl font-bold mb-4 brand-secondary">Proyección Financiera a 5 Años</h3>
-                 <div class="chart-container">
-                    <canvas id="financialChart"></canvas>
+            <div class="chart-container">
+                <canvas id="financialChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Us Section -->
+    <section id="por-que-nosotros" class="section bg-gray-900">
+        <div class="container mx-auto max-w-7xl">
+            <div class="text-center space-y-4 mb-16">
+                <h2 class="text-4xl font-bold tracking-tight text-yellow-400">¿Por Qué Invertir en Legado Real?</h2>
+                <p class="text-xl text-gray-400">No somos una startup, somos un sistema.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3">Tecnología Única</h3>
+                    <p class="text-gray-300">Hemos desarrollado un Organismo Digital Autónomo (ODA), una "Fábrica de Marcas" impulsada por IA, que opera con máxima eficiencia y escalabilidad.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3">Modelo Validado</h3>
+                    <p class="text-gray-300">Nuestra estrategia por fases (digital, POD, marca blanca) nos permite validar el mercado con bajo riesgo y expandirnos de manera sostenible.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3">Ventaja Competitiva</h3>
+                    <p class="text-gray-300">Nuestro enfoque en el nicho "High-Achiever" latino y la capacidad de nuestra IA para crear productos hiper-relevantes nos da una posición de liderazgo en el mercado.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-semibold mb-3">Retorno Atractivo</h3>
+                    <p class="text-gray-300">Nuestra proyección financiera muestra un crecimiento sólido y un beneficio neto exponencial en los próximos cinco años.</p>
                 </div>
             </div>
-             <div class="card p-6 rounded-lg mt-8">
-                <h3 class="text-2xl font-bold mb-4 brand-secondary">Estrategias de Crecimiento a Largo Plazo</h3>
-                <ul class="list-disc list-inside space-y-2 text-gray-300">
-                    <li>**Programa "Embajadores del Legado":** Sistema de gamificación para la comunidad.</li>
-                    <li>**Publicidad "Reciclaje y Adaptación":** Uso del contenido orgánico de mejor rendimiento como laboratorio para crear anuncios de pago de alta eficiencia.</li>
-                    <li>**Marketing sin Rostro (Faceless):** La marca se centra en un estilo de vida, humanizándose a través de storytelling y UGC.</li>
-                    <li>**Lingüística "Equilibrio Exquisito":** Uso estratégico de Español, Inglés y Spanglish.</li>
-                </ul>
-            </div>
-        </section>
-    </main>
-</div>
+        </div>
+    </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        const setActiveLink = (id) => {
-            const navLinks = document.querySelectorAll('#desktop-nav a');
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${id}`) {
-                    link.classList.add('active');
-                }
-            });
-        };
+    <!-- Footer -->
+    <footer class="bg-gray-700 py-8 text-center text-gray-400">
+        <div class="container mx-auto max-w-7xl">
+            <p>&copy; 2025 Legado Real. Todos los derechos reservados. | Para más información, contacta con nuestro equipo.</p>
+        </div>
+    </footer>
 
-        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.3 };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    setActiveLink(entry.target.id);
-                }
-            });
-        }, observerOptions);
-        document.querySelectorAll('section').forEach(section => observer.observe(section));
-
-        const techStackData = [
-            { name: 'Docker', category: 'Infraestructura' }, { name: 'Portainer', category: 'Infraestructura' },
-            { name: 'Traefik', category: 'Infraestructura' }, { name: 'Gitea', category: 'Infraestructura' },
-            { name: 'Terraform', category: 'Infraestructura' }, { name: 'Google Cloud SDK', category: 'Infraestructura' }, { name: 'Vault by HashiCorp', category: 'Infraestructura' },
-            { name: 'Supabase (pgvector)', category: 'Datos y Conocimiento' }, { name: 'AppFlowy', category: 'Datos y Conocimiento' },
-            { name: 'Prometheus', category: 'Datos y Monitorización' }, { name: 'Grafana', category: 'Datos y Monitorización' },
-            { name: 'Uptime Kuma', category: 'Datos y Monitorización' },
-            { name: 'n8n', category: 'Automatización y Operaciones' }, { name: 'WordPress', category: 'Automatización y Operaciones' },
-            { name: 'Mautic', category: 'Automatización y Operaciones' }, { name: 'Typebot', category: 'Automatización y Operaciones' },
-            { name: 'SuiteCRM', category: 'Automatización y Operaciones' }, { name: 'Invoice Ninja', category: 'Automatización y Operaciones' },
-            { name: 'Webstudio', category: 'Fábrica de Frontends' }, { name: 'Motia', category: 'Fábrica de Frontends' },
-            { name: 'Lighthouse CLI', category: 'Fábrica de Frontends' }, { name: 'Tailwind CSS', category: 'Fábrica de Frontends' },
-            { name: 'Shadcn/UI', category: 'Fábrica de Frontends' },
-            { name: 'SuperAGI', category: 'Autonomía y Modelos IA' }, { name: 'Ollama', category: 'Autonomía y Modelos IA' },
-            { name: 'Flowise', category: 'Autonomía y Modelos IA' }, { name: 'SearXNG', category: 'Autonomía y Modelos IA' }, { name: 'Miniflux', category: 'Autonomía y Modelos IA' },
-            { name: 'Codestral (22B)', category: 'Autonomía y Modelos IA' }, { name: 'ComfyUI', category: 'Autonomía y Modelos IA' }, { name: 'XTTS-WebUI', category: 'Autonomía y Modelos IA' },
-            { name: 'Llama 3 8B', category: 'Autonomía y Modelos IA' }, { name: 'Stable Diffusion XL', category: 'Autonomía y Modelos IA' },
-            { name: 'Stable Video Diffusion', category: 'Autonomía y Modelos IA' },
-        ];
-        const techGrid = document.getElementById('tech-stack-grid');
-        const techFilters = document.querySelectorAll('.tech-filter');
-        function renderStack(filter) {
-            techGrid.innerHTML = '';
-            const filteredData = filter === 'all' ? techStackData : techStackData.filter(item => item.category === filter);
-            filteredData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-gray-800 p-3 rounded-md text-center';
-                card.innerHTML = `<p class="font-semibold text-sm text-gray-200">${item.name}</p>`;
-                techGrid.appendChild(card);
-            });
-        }
-        techFilters.forEach(button => {
-            button.addEventListener('click', () => {
-                const newFilter = button.dataset.filter;
-                document.querySelector('#tech-stack-filters .active').classList.remove('active', 'bg-emerald-700');
-                document.querySelector('#tech-stack-filters .active').classList.add('bg-gray-700');
-                button.classList.add('active', 'bg-emerald-700');
-                button.classList.remove('bg-gray-700');
-                renderStack(newFilter);
-            });
-        });
-        renderStack('all');
-
-        const agentsData = [
-            { department: "Cúpula Estratégica y de Gobierno", agents: [
-                { name: "Agente CEO", role: "Orquesta toda la operación y vela por el cumplimiento de la constitución." },
-                { name: "Agente Arquitecto Organizacional (CAO)", role: "Diseña y construye la estructura de agentes." },
-                { name: "Agente Visionario (CSO)", role: "Busca oportunidades de crecimiento externas y alianzas estratégicas." }
-            ]},
-            { department: "Innovación y Tecnología", agents: [
-                { name: "Agente de Innovación (IDC)", role: "El 'constructor maestro'. Construye los MCPs en n8n y los 'cerebros' en Flowise." },
-                { name: "Agente Ingeniero de Fiabilidad (SRE)", role: "Guardián de la calidad y el rendimiento. Aprobador final en el bucle de QA." },
-                { name: "Agente Ingeniero de Infraestructura", role: "Gestiona la infraestructura en GCP con Terraform y gcloud." }
-            ]},
-            { department: "Inteligencia de Mercado", agents: [
-                { name: "Agente Analista de Precios y Mercado", role: "Monitoriza precios y propone ofertas." },
-                { name: "Agente Analista de Tendencias", role: "Investiga qué productos, estilos y conceptos son populares." },
-                { name: "Agente Analista de Feedback", role: "Analiza reseñas y comentarios de clientes." }
-            ]},
-            { department: "Producción Creativa", agents: [
-                { name: "Agente de Contenido Estratégico", role: "Crea todo el contenido escrito (SEO + Copy)." },
-                { name: "Agente Diseñador Visual (UI/UX)", role: "Arquitecto de la Experiencia del Usuario. Opera Webstudio." },
-                { name: "Agente de Diseño Gráfico", role: "Crea todos los activos visuales estáticos (posts, mockups) usando ComfyUI." },
-                { name: "Agente Productor Audiovisual", role: "Crea todo el contenido de video." }
-            ]},
-            { department: "Cumplimiento y Calidad", agents: [
-                { name: "Agente de Verificación de PI", role: "Analiza diseños para evitar infracciones de copyright." },
-                { name: "Agente Guardián de la Neutralidad", role: "Audita el contenido para asegurar el cumplimiento de las leyes." }
-            ]},
-            { department: "Operaciones y Relación con Cliente", agents: [
-                { name: "Agente Gestor Multicanal", role: "Publica y sincroniza productos en todos los canales." },
-                { name: "Agente de Finanzas y Pagos (FRP)", role: "Gestiona los pagos a proveedores." },
-                { name: "Agente Contador (CFO)", role: "Registra transacciones y audita la rentabilidad." },
-                { name: "Agente de Asesoría Legal", role: "Gestiona los aspectos corporativos." },
-                { name: "Agente de Experiencia del Cliente (CXO)", role: "Gestiona la experiencia post-venta y la lealtad." },
-                { name: "Agente Archivista", role: "Documenta todos los procesos en AppFlowy." }
-            ]}
-        ];
-        const agentsGrid = document.getElementById('agents-grid');
-        agentsData.forEach(dept => {
-            const deptContainer = document.createElement('div');
-            const deptTitle = document.createElement('h3');
-            deptTitle.className = 'text-3xl font-bold mb-6 brand-secondary border-b-2 border-gray-700 pb-2';
-            deptTitle.textContent = dept.department;
-            const deptGrid = document.createElement('div');
-            deptGrid.className = 'grid md:grid-cols-2 lg:grid-cols-3 gap-6';
-            dept.agents.forEach(agent => {
-                const agentCard = document.createElement('div');
-                agentCard.className = 'card p-4 rounded-lg flex flex-col';
-                agentCard.innerHTML = `
-                    <h4 class="font-bold text-lg text-white mb-1">${agent.name}</h4>
-                    <p class="text-sm text-gray-400 flex-grow">${agent.role}</p>
-                `;
-                deptGrid.appendChild(agentCard);
-            });
-            deptContainer.appendChild(deptTitle);
-            deptContainer.appendChild(deptGrid);
-            agentsGrid.appendChild(deptContainer);
-        });
-
-        const financialData = {
-            labels: ['Año 1', 'Año 2', 'Año 3', 'Año 4', 'Año 5'],
-            datasets: [
-                {
-                    label: 'Ingresos Totales',
-                    data: [1155000, 3500000, 7500000, 13000000, 20000000],
-                    backgroundColor: 'rgba(70, 130, 180, 0.7)',
-                    borderColor: 'rgba(70, 130, 180, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Costos Operativos',
-                    data: [645467, 1750000, 3375000, 5200000, 8000000],
-                    backgroundColor: 'rgba(255, 0, 0, 0.6)',
-                    borderColor: 'rgba(255, 0, 0, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Beneficio Neto',
-                    data: [509533, 1750000, 4125000, 7800000, 12000000],
-                    backgroundColor: 'rgba(184, 134, 11, 0.7)',
-                    borderColor: 'rgba(184, 134, 11, 1)',
-                    borderWidth: 1
-                }
-            ]
-        };
-        const ctx = document.getElementById('financialChart').getContext('2d');
-        const legendColor = '#E8E6D9';
-        const gridColor = 'rgba(232, 230, 217, 0.1)';
-        new Chart(ctx, {
+    <script>
+        // Chart for Market Opportunity Section
+        const marketCtx = document.getElementById('marketChart').getContext('2d');
+        const marketChart = new Chart(marketCtx, {
             type: 'bar',
-            data: financialData,
+            data: {
+                labels: ['Mexicanos', 'Puertorriqueños', 'Salvadoreños', 'Cubanos', 'Dominicanos', 'Guatemaltecos'],
+                datasets: [{
+                    label: 'Población Hispana en EE. UU. (en millones)',
+                    data: [37.1, 5.9, 2.3, 2.4, 2.2, 1.6],
+                    backgroundColor: [
+                        '#eab308',
+                        '#eab308',
+                        '#eab308',
+                        '#eab308',
+                        '#eab308',
+                        '#eab308'
+                    ],
+                    borderColor: '#f59e0b',
+                    borderWidth: 1
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
+                    x: {
+                        ticks: { color: '#d1d5db' },
+                        grid: { color: 'rgba(209, 213, 219, 0.1)' }
+                    },
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            color: legendColor,
-                            callback: function(value) { return '$' + (value / 1000000) + 'M'; }
-                        },
-                        grid: { color: gridColor }
-                    },
-                    x: { ticks: { color: legendColor }, grid: { display: false } }
+                        ticks: { color: '#d1d5db' },
+                        grid: { color: 'rgba(209, 213, 219, 0.1)' }
+                    }
                 },
                 plugins: {
-                    legend: { labels: { color: legendColor } },
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 if (label) { label += ': '; }
-                                if (context.parsed.y !== null) {
-                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                                }
+                                if (context.parsed.y !== null) { label += context.parsed.y + ' M'; }
                                 return label;
                             }
                         }
@@ -465,7 +239,63 @@
                 }
             }
         });
-    });
-</script>
+
+        // Chart for Financial Projection
+        const financialCtx = document.getElementById('financialChart').getContext('2d');
+        const financialChart = new Chart(financialCtx, {
+            type: 'line',
+            data: {
+                labels: ['Año 1', 'Año 2', 'Año 3', 'Año 4', 'Año 5'],
+                datasets: [
+                    {
+                        label: 'Ingresos Totales (en millones)',
+                        data: [1.15, 3.5, 7.5, 13.0, 20.0],
+                        borderColor: '#eab308',
+                        backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                        tension: 0.4,
+                        fill: true,
+                    },
+                    {
+                        label: 'Beneficio Neto (en millones)',
+                        data: [0.5, 1.75, 4.125, 7.8, 12.0],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        tension: 0.4,
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { color: '#d1d5db' },
+                        grid: { color: 'rgba(209, 213, 219, 0.1)' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#d1d5db' },
+                        grid: { color: 'rgba(209, 213, 219, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#d1d5db' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) { label += '$' + context.parsed.y.toLocaleString() + ' M'; }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
